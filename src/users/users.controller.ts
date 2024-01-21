@@ -3,16 +3,19 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   ParseIntPipe,
   Patch,
+  Post,
   UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { UpdateUserDto, UserDto } from './dtos';
+import { CreateUserDto, UpdateUserDto, UserDto } from './dtos';
 import { Serialize } from '../interceptors';
-import { JwtGuard } from '../auth/guards';
-import { GetMe } from './decorators';
+import { AdminGuard, JwtGuard, OwnershipGuard } from '../guards';
+import { CurrentUser } from './decorators';
 
 @UseGuards(JwtGuard)
 @Serialize(UserDto)
@@ -23,26 +26,44 @@ import { GetMe } from './decorators';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  @HttpCode(HttpStatus.OK)
   @Get('/me')
-  getMe(@GetMe('id') id: number) {
-    return this.usersService.findUserById(id);
+  getMe(@CurrentUser() user: UserDto) {
+    return user;
   }
 
+  @HttpCode(HttpStatus.OK)
   @Get('/:id')
   findUser(@Param('id', ParseIntPipe) id: number) {
     return this.usersService.findUserById(id);
   }
 
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(AdminGuard)
   @Get()
   findAllUsers() {
     return this.usersService.findAllUsers();
   }
 
+  @HttpCode(HttpStatus.CREATED)
+  @UseGuards(AdminGuard)
+  @Post()
+  createUser(@Body() createUserDto: CreateUserDto) {
+    return this.usersService.create(
+      createUserDto.email,
+      createUserDto.password,
+    );
+  }
+
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(AdminGuard)
   @Delete('/:id')
   removeUser(@Param('id', ParseIntPipe) id: number) {
     return this.usersService.remove(id);
   }
 
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(OwnershipGuard)
   @Patch('/:id')
   updateUser(
     @Param('id', ParseIntPipe) id: number,

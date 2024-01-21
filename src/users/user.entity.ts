@@ -3,8 +3,10 @@ import {
   BeforeInsert,
   BeforeUpdate,
   Column,
+  CreateDateColumn,
   Entity,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import * as argon from 'argon2';
 
@@ -19,8 +21,17 @@ export class User {
   @Column()
   password: string;
 
+  @Column({ default: false })
+  admin: boolean;
+
   @Column({ default: null })
   refreshToken: string;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 
   private tempPassword: string;
 
