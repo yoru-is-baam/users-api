@@ -9,8 +9,13 @@ export class UsersService {
     @InjectRepository(User) private readonly userRepository: Repository<User>,
   ) {}
 
-  create(email: string, password: string) {
-    const user = this.userRepository.create({ email, password });
+  async create(email: string, password: string) {
+    const userCount = await this.userRepository.count();
+    const user = this.userRepository.create({
+      email,
+      password,
+      admin: userCount === 0,
+    });
     return this.userRepository.save(user);
   }
 
@@ -34,6 +39,7 @@ export class UsersService {
 
   async update(id: number, attrs: Partial<User>) {
     const user = await this.findById(id);
+    delete attrs.admin;
     Object.assign(user, attrs);
     return this.userRepository.save(user);
   }
