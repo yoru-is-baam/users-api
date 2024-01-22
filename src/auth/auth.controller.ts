@@ -17,6 +17,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { ThrottlerGuard } from '@nestjs/throttler';
 
 @ApiTags('Auth')
 @Controller({
@@ -27,6 +28,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @HttpCode(HttpStatus.CREATED)
+  @UseGuards(ThrottlerGuard)
   @Post('/signup')
   @ApiOperation({
     summary: 'Sign up an account',
@@ -50,6 +52,7 @@ export class AuthController {
   }
 
   @HttpCode(HttpStatus.OK)
+  @UseGuards(ThrottlerGuard)
   @Post('/signin')
   @ApiOperation({
     summary: 'Sign in an account',
@@ -72,7 +75,7 @@ export class AuthController {
   }
 
   @HttpCode(HttpStatus.OK)
-  @UseGuards(JwtGuard)
+  @UseGuards(ThrottlerGuard, JwtGuard)
   @Post('/signout')
   @ApiBearerAuth()
   @ApiOperation({
