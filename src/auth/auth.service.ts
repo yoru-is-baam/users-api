@@ -31,7 +31,7 @@ export class AuthService {
       return { accessToken };
     } catch (error) {
       if (error.code === 'ER_DUP_ENTRY') {
-        throw new BadRequestException('Credentials taken');
+        throw new ForbiddenException('Credentials taken');
       }
     }
   }

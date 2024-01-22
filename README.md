@@ -32,6 +32,20 @@
 $ yarn install
 ```
 
+## Running the database with docker compose
+
+To use Docker you also need to change your `DB_URL`
+
+```bash
+# development
+$ docker compose dev-db up -d
+```
+
+```bash
+# test
+$ docker compose test-db up -d
+```
+
 ## Running the app
 
 ```bash
