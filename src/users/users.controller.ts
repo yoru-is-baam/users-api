@@ -9,6 +9,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
@@ -20,9 +21,11 @@ import {
   ApiBearerAuth,
   ApiOperation,
   ApiParam,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { PaginationDto } from './dtos/pagination.dto';
 
 @ApiBearerAuth()
 @ApiTags('Users')
@@ -89,8 +92,8 @@ export class UsersController {
     status: HttpStatus.OK,
     description: 'Find all users successfully.',
   })
-  findAllUsers() {
-    return this.usersService.findAllUsers();
+  findAllUsers(@Query() paginationDto: PaginationDto) {
+    return this.usersService.findAllUsers(paginationDto);
   }
 
   @HttpCode(HttpStatus.CREATED)
