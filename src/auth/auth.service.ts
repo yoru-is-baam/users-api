@@ -25,13 +25,13 @@ export class AuthService {
         authDto.email,
         authDto.password,
       );
-      const payload = { sub: user.id, email: user.email };
+      const payload = { sub: user.id, email: user.email, isAdmin: user.admin };
       const accessToken = await this.generateToken(payload, Token.ACCESS_TOKEN);
 
       return { accessToken };
     } catch (error) {
       if (error.code === 'ER_DUP_ENTRY') {
-        throw new BadRequestException('Credentials taken');
+        throw new ForbiddenException('Credentials taken');
       }
     }
   }
@@ -42,7 +42,7 @@ export class AuthService {
     if (!user || !(await user.comparePassword(authDto.password)))
       throw new ForbiddenException('Credentials incorrect');
 
-    const payload = { sub: user.id, email: user.email };
+    const payload = { sub: user.id, email: user.email, isAdmin: user.admin };
     const accessToken = await this.generateToken(payload, Token.ACCESS_TOKEN);
     const refreshToken = await this.generateToken(payload, Token.REFRESH_TOKEN);
 
@@ -62,7 +62,10 @@ export class AuthService {
     return { accessToken: token, refreshToken: token };
   }
 
-  private generateToken(payload: { sub: number; email: string }, token: Token) {
+  private generateToken(
+    payload: { sub: number; email: string; isAdmin: boolean },
+    token: Token,
+  ) {
     let expiresIn: string, secret: string;
 
     if (token === Token.ACCESS_TOKEN) {
@@ -85,7 +88,7 @@ export class AuthService {
       const user = await this.usersService.findUserByEmail(email);
 
       // generate new tokens
-      const payload = { sub: user.id, email: user.email };
+      const payload = { sub: user.id, email: user.email, isAdmin: user.admin };
       const newAccessToken = await this.generateToken(
         payload,
         Token.ACCESS_TOKEN,
