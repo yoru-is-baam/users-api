@@ -16,13 +16,10 @@ import { User } from './users/user.entity';
       useFactory: (config: ConfigService) => {
         return {
           type: 'mysql',
-          host: config.get<string>('DB_HOST'),
-          port: config.get<number>('DB_PORT'),
-          username: config.get<string>('DB_USERNAME'),
-          password: config.get<string>('DB_PASSWORD'),
-          database: config.get<string>('DB_NAME'),
+          url: config.get<string>('DB_URL'),
           entities: [User],
-          synchronize: config.get<string>('NODE_ENV') !== 'production',
+          migrationsRun: config.get<string>('NODE_ENV') === 'test',
+          synchronize: config.get<string>('NODE_ENV') === 'development',
         };
       },
     }),

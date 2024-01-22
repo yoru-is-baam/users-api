@@ -9,6 +9,7 @@ services:
       MYSQL_DATABASE: user_api
       MYSQL_USER: mysql
       MYSQL_PASSWORD: mysql
+    restart: always
     networks:
       - backend
   test-db:
@@ -20,6 +21,7 @@ services:
       MYSQL_DATABASE: user_api
       MYSQL_USER: mysql
       MYSQL_PASSWORD: mysql
+    restart: always
     networks:
       - backend
 networks:
