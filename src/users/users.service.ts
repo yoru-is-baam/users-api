@@ -6,6 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './user.entity';
 import { Repository } from 'typeorm';
+import { PaginationDto } from './dtos/pagination.dto';
 
 @Injectable()
 export class UsersService {
@@ -37,8 +38,13 @@ export class UsersService {
     return this.userRepository.findOneBy({ email });
   }
 
-  findAllUsers() {
-    return this.userRepository.find();
+  findAllUsers(paginationDto: PaginationDto) {
+    const { page, pageSize } = paginationDto;
+    return this.userRepository
+      .createQueryBuilder('user')
+      .skip((page - 1) * pageSize)
+      .take(pageSize)
+      .getMany();
   }
 
   async update(id: number, attrs: Partial<User>) {
