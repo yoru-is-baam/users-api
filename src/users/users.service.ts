@@ -31,7 +31,7 @@ export class UsersService {
           throw new ForbiddenException('Credentials taken');
         }
       }
-      throw Error;
+      throw error;
     }
   }
 
