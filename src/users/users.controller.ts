@@ -11,9 +11,10 @@ import {
   Post,
   Query,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { CreateUserDto, UpdateUserDto, UserDto } from './dtos';
+import { UpdateUserDto, UserDto } from './dtos';
 import { Serialize } from '../interceptors';
 import { AdminGuard, JwtGuard, OwnershipGuard } from '../guards';
 import { CurrentUser } from './decorators';
@@ -21,11 +22,11 @@ import {
   ApiBearerAuth,
   ApiOperation,
   ApiParam,
-  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { PaginationDto } from './dtos/pagination.dto';
+import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
 
 @ApiBearerAuth()
 @ApiTags('Users')
@@ -58,6 +59,7 @@ export class UsersController {
 
   @HttpCode(HttpStatus.OK)
   @UseGuards(AdminGuard)
+  @UseInterceptors(CacheInterceptor)
   @Get('/:id')
   @ApiOperation({
     summary: 'Find a user',
@@ -83,6 +85,8 @@ export class UsersController {
 
   @HttpCode(HttpStatus.OK)
   @UseGuards(AdminGuard)
+  @UseInterceptors(CacheInterceptor)
+  @CacheTTL(60000)
   @Get()
   @ApiOperation({
     summary: 'Find all users',
@@ -94,24 +98,6 @@ export class UsersController {
   })
   findAllUsers(@Query() paginationDto: PaginationDto) {
     return this.usersService.findAllUsers(paginationDto);
-  }
-
-  @HttpCode(HttpStatus.CREATED)
-  @UseGuards(AdminGuard)
-  @Post()
-  @ApiOperation({
-    summary: 'Create a user',
-    description: 'Admin create a new user with email and password',
-  })
-  @ApiResponse({
-    status: HttpStatus.CREATED,
-    description: 'Create a user successfully.',
-  })
-  createUser(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(
-      createUserDto.email,
-      createUserDto.password,
-    );
   }
 
   @HttpCode(HttpStatus.NO_CONTENT)
@@ -144,8 +130,7 @@ export class UsersController {
   @Patch('/:id')
   @ApiOperation({
     summary: 'Update a user',
-    description:
-      'Users can update their information. Admin can update all users.',
+    description: 'Users can update their information. Just only their profile.',
   })
   @ApiResponse({
     status: HttpStatus.OK,

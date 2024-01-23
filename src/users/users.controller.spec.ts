@@ -3,16 +3,12 @@ import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { PaginationDto } from './dtos/pagination.dto';
 import { User } from './user.entity';
-import { CreateUserDto, UpdateUserDto } from './dtos';
+import { UpdateUserDto } from './dtos';
+import { CacheInterceptor, CacheModule } from '@nestjs/cache-manager';
 
 describe('UsersController', () => {
   let controller: UsersController;
   let mockUsersService: Partial<UsersService>;
-
-  const createUserDto: CreateUserDto = {
-    email: 'test@gmail.com',
-    password: 'test',
-  };
 
   const updateUserDto: UpdateUserDto = {
     password: 'newpassword',
@@ -20,8 +16,8 @@ describe('UsersController', () => {
 
   const mockUser: Partial<User> = {
     id: 1,
-    email: createUserDto.email,
-    password: createUserDto.password,
+    email: 'test@gmail.com',
+    password: 'test',
     admin: false,
     comparePassword: async (plainPassword: string) => plainPassword === 'test',
   };
@@ -42,7 +38,10 @@ describe('UsersController', () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [UsersController],
       providers: [{ provide: UsersService, useValue: mockUsersService }],
-    }).compile();
+    })
+      .overrideInterceptor(CacheInterceptor)
+      .useValue({})
+      .compile();
 
     controller = module.get<UsersController>(UsersController);
   });
@@ -73,11 +72,6 @@ describe('UsersController', () => {
 
     const result = await controller.findAllUsers(paginationDto);
     expect(result).toEqual(mockUsers);
-  });
-
-  it('should create a new user', async () => {
-    const result = await controller.createUser(createUserDto);
-    expect(result).toEqual(mockUser);
   });
 
   it('should remove a user', async () => {
