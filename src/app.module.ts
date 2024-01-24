@@ -1,11 +1,10 @@
 import { Module } from '@nestjs/common';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { User } from './users/user.entity';
+import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
-import { CacheModule } from '@nestjs/cache-manager';
+import { PrismaModule } from './prisma/prisma.module';
+import { PasswordModule } from './password/password.module';
 
 @Module({
   imports: [
@@ -19,20 +18,10 @@ import { CacheModule } from '@nestjs/cache-manager';
       isGlobal: true,
       envFilePath: `.env.${process.env.NODE_ENV}`,
     }),
-    TypeOrmModule.forRootAsync({
-      inject: [ConfigService],
-      useFactory: (config: ConfigService) => {
-        return {
-          type: 'mysql',
-          url: config.get<string>('DB_URL'),
-          entities: [User],
-          migrationsRun: config.get<string>('NODE_ENV') === 'test',
-          synchronize: config.get<string>('NODE_ENV') === 'development',
-        };
-      },
-    }),
     UsersModule,
     AuthModule,
+    PrismaModule,
+    PasswordModule,
   ],
 })
 export class AppModule {}

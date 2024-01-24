@@ -2,7 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { PaginationDto } from './dtos/pagination.dto';
-import { User } from './user.entity';
 import { UpdateUserDto } from './dtos';
 import { CacheInterceptor, CacheModule } from '@nestjs/cache-manager';
 
@@ -26,7 +25,7 @@ describe('UsersController', () => {
 
   beforeEach(async () => {
     mockUsersService = {
-      findUserById: (id: number) => Promise.resolve(mockUser as User),
+      findById: (id: number) => Promise.resolve(mockUser as User),
       findAllUsers: (paginationDto: PaginationDto) => Promise.resolve([]),
       create: (email: string, password: string) =>
         Promise.resolve(mockUser as User),

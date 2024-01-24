@@ -4,11 +4,7 @@ import { UsersService } from '../users/users.service';
 import { PaginationDto } from '../users/dtos/pagination.dto';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { User } from '../users/user.entity';
-import { AuthDto } from './dtos';
-import { QueryFailedError } from 'typeorm';
 import { ForbiddenException } from '@nestjs/common';
-import { RefreshDto } from './dtos/refresh.dto';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -39,7 +35,7 @@ describe('AuthService', () => {
 
   beforeEach(async () => {
     mockUsersService = {
-      findUserByEmail: (email: string) => Promise.resolve(user as User),
+      findByEmail: (email: string) => Promise.resolve(user as User),
       findAllUsers: (paginationDto: PaginationDto) => Promise.resolve([]),
       create: (email: string, password: string) =>
         Promise.resolve(user as User),

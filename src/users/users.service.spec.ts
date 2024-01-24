@@ -92,7 +92,7 @@ describe('UsersService', () => {
   describe('findUserById', () => {
     it('should return user if found by ID', async () => {
       mockUserRepository.findOneBy.mockResolvedValue(mockUser);
-      const result = await service.findUserById(mockUser.id);
+      const result = await service.findById(mockUser.id);
       expect(result).toEqual(mockUser);
     });
 
@@ -101,7 +101,7 @@ describe('UsersService', () => {
       mockUserRepository.findOneBy.mockResolvedValue(null);
 
       try {
-        await service.findUserById(mockUser.id);
+        await service.findById(mockUser.id);
         // If the promise is not rejected, fail the test
         fail(
           'Expected service.findUserById to throw NotFoundException, but it did not throw',
@@ -116,7 +116,7 @@ describe('UsersService', () => {
   describe('findUserByEmail', () => {
     it('should return user if found by email', async () => {
       mockUserRepository.findOneBy.mockResolvedValue(mockUser);
-      const result = await service.findUserByEmail(mockUser.email);
+      const result = await service.findByEmail(mockUser.email);
       expect(result).toEqual(mockUser);
     });
   });
