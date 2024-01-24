@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
+import { useContainer } from 'class-validator';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -10,6 +11,7 @@ async function bootstrap() {
   app.use(helmet());
   app.enableCors();
   app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
+  useContainer(app.select(AppModule), { fallbackOnErrors: true });
   app.enableVersioning({
     type: VersioningType.URI,
   });

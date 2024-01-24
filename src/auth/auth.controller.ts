@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   HttpCode,
@@ -6,18 +7,14 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
-import { AuthDto } from './dtos';
+import { CreateUserDto } from '../users/dtos';
 import { AuthService } from './auth.service';
-import { RefreshDto } from './dtos/refresh.dto';
 import { CurrentUser } from '../users/decorators';
 import { JwtGuard } from '../guards';
-import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { ThrottlerGuard } from '@nestjs/throttler';
+import { CreateAdminDto, SignInDto } from './dtos';
+import { ResponseCode } from '../enums';
 
 @ApiTags('Auth')
 @Controller({
@@ -27,92 +24,35 @@ import { ThrottlerGuard } from '@nestjs/throttler';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @HttpCode(HttpStatus.CREATED)
   @UseGuards(ThrottlerGuard)
-  @Post('/signup')
-  @ApiOperation({
-    summary: 'Sign up an account',
-    description:
-      'Users create their account. The first account is the admin account.',
-  })
-  @ApiResponse({
-    status: HttpStatus.CREATED,
-    description: 'Sign up an account successfully.',
-  })
-  @ApiResponse({
-    status: HttpStatus.BAD_REQUEST,
-    description: 'Invalid input value.',
-  })
-  @ApiResponse({
-    status: HttpStatus.FORBIDDEN,
-    description: 'Credentials taken.',
-  })
-  signUp(@Body() authDto: AuthDto) {
-    return this.authService.signUp(authDto);
+  @Post('/sign-up')
+  async signUp(@Body() dto: CreateUserDto) {
+    const result = await this.authService.signUp(dto);
+    return { message: ResponseCode.CREATED, result };
   }
 
   @HttpCode(HttpStatus.OK)
   @UseGuards(ThrottlerGuard)
-  @Post('/signin')
-  @ApiOperation({
-    summary: 'Sign in an account',
-    description: 'Users log in their account.',
-  })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'Sign in an account successfully.',
-  })
-  @ApiResponse({
-    status: HttpStatus.BAD_REQUEST,
-    description: 'Invalid input value.',
-  })
-  @ApiResponse({
-    status: HttpStatus.FORBIDDEN,
-    description: 'Credentials incorrect.',
-  })
-  signIn(@Body() authDto: AuthDto) {
-    return this.authService.signIn(authDto);
+  @Post('/sign-in')
+  async signIn(@Body() dto: SignInDto) {
+    const result = await this.authService.signIn(dto);
+    if (!result) throw new BadRequestException('Wrong credentials');
+    return { message: ResponseCode.OK, result };
   }
 
+  @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
   @UseGuards(ThrottlerGuard, JwtGuard)
-  @Post('/signout')
-  @ApiBearerAuth()
-  @ApiOperation({
-    summary: 'Sign out an account',
-    description: 'Users log out their account.',
-  })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'Sign out an account successfully.',
-  })
-  @ApiResponse({
-    status: HttpStatus.UNAUTHORIZED,
-    description: 'Not logged in.',
-  })
-  signOut(@CurrentUser('id') id: number) {
-    return this.authService.signOut(id);
+  @Post('/sign-out')
+  async signOut(@CurrentUser('id') id: number) {
+    const result = await this.authService.signOut(id);
+    return { message: ResponseCode.OK, result };
   }
 
-  @HttpCode(HttpStatus.CREATED)
-  @Post('/refresh')
-  @ApiOperation({
-    summary: 'Refresh a new token',
-    description: 'Client automatically request a new refresh token.',
-  })
-  @ApiResponse({
-    status: HttpStatus.CREATED,
-    description: 'Refresh token successfully.',
-  })
-  @ApiResponse({
-    status: HttpStatus.BAD_REQUEST,
-    description: 'Invalid input value.',
-  })
-  @ApiResponse({
-    status: HttpStatus.UNAUTHORIZED,
-    description: 'Invalid token.',
-  })
-  refresh(@Body() refreshDto: RefreshDto) {
-    return this.authService.refresh(refreshDto);
+  @Post('sign-up-admin-account')
+  @UseGuards(ThrottlerGuard)
+  async createAdminAccount(@Body() dto: CreateAdminDto) {
+    const result = await this.authService.createAdminAccount(dto);
+    return { message: ResponseCode.CREATED, result };
   }
 }
