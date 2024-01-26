@@ -10,7 +10,11 @@ async function bootstrap() {
 
   app.use(helmet());
   app.enableCors();
-  app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+    }),
+  );
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
   app.enableVersioning({
     type: VersioningType.URI,

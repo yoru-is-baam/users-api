@@ -6,7 +6,7 @@ import {
   Length,
   Validate,
 } from 'class-validator';
-import { EmailExistsRule } from '../../decorators';
+import { EmailExists } from '../decorators';
 
 export class CreateUserDto {
   @ApiProperty({
@@ -14,7 +14,7 @@ export class CreateUserDto {
   })
   @IsEmail()
   @IsNotEmpty()
-  @Validate(EmailExistsRule)
+  @Validate(EmailExists)
   email: string;
 
   @ApiProperty({

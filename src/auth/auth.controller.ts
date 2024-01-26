@@ -13,8 +13,9 @@ import { CurrentUser } from '../users/decorators';
 import { JwtGuard } from '../guards';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { ThrottlerGuard } from '@nestjs/throttler';
-import { CreateAdminDto, SignInDto } from './dtos';
+import { SignInDto } from './dtos';
 import { ResponseCode } from '../enums';
+import { CreateAdminDto } from '../users/dtos';
 
 @ApiTags('Auth')
 @Controller({

@@ -4,10 +4,10 @@ import {
   NotFoundException,
   PipeTransform,
 } from '@nestjs/common';
-import { UsersService } from '../users/users.service';
+import { UsersService } from '../users.service';
 
 @Injectable()
-export class IdNotExistsPipe implements PipeTransform {
+export class UserIdNotExistsPipe implements PipeTransform {
   constructor(private readonly usersService: UsersService) {}
 
   async transform(value: any, metadata: ArgumentMetadata) {

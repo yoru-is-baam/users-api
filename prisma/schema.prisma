@@ -11,17 +11,48 @@ model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique
   password  String
-  roles     Role[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  roleId    Int      @default(2) @map("role_id")
+  role      Role     @relation(fields: [roleId], references: [id])
 
   @@map("users")
 }
 
 model Role {
-  id    Int    @id @default(autoincrement())
-  name  String
-  users User[]
+  id         Int          @id @default(autoincrement())
+  name       String       @unique
+  User       User[]
+  Permission Permission[]
 
   @@map("roles")
+}
+
+model Entity {
+  id         Int          @id @default(autoincrement())
+  name       String       @unique
+  Permission Permission[]
+
+  @@map("entities")
+}
+
+model Action {
+  id         Int          @id @default(autoincrement())
+  name       String       @unique
+  Permission Permission[]
+
+  @@map("actions")
+}
+
+model Permission {
+  roleId   Int @map("role_id")
+  entityId Int @map("entity_id")
+  actionId Int @map("action_id")
+
+  role   Role   @relation(fields: [roleId], references: [id])
+  entity Entity @relation(fields: [entityId], references: [id])
+  action Action @relation(fields: [actionId], references: [id])
+
+  @@id([roleId, entityId, actionId])
+  @@map("permissions")
 }

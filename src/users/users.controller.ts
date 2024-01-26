@@ -12,16 +12,18 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { CreateUserDto, UpdateUserDto, UserDto } from './dtos';
+import { CreateUserDto, UpdateMeDto, UpdateUserDto, UserDto } from './dtos';
 import { Serialize } from '../interceptors';
-import { AdminGuard, JwtGuard, OwnershipGuard } from '../guards';
+import { PermissionGuard, JwtGuard, OwnershipGuard } from '../guards';
 import { CurrentUser } from './decorators';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { PaginationDto } from './dtos/pagination.dto';
 import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
 import { ResponseCode } from '../enums/response-code.enum';
 import { User } from '@prisma/client';
-import { IdNotExistsPipe } from '../pipes';
+import { UserIdNotExistsPipe } from './pipes';
+import { Permission } from '../decorators';
+import { ActionName, EntityName } from '../enums';
 
 @ApiBearerAuth()
 @ApiTags('Users')
@@ -40,18 +42,20 @@ export class UsersController {
   }
 
   @Serialize(UserDto, (data) => data.result.user)
-  @UseGuards(AdminGuard)
   @UseInterceptors(CacheInterceptor)
+  @UseGuards(PermissionGuard)
+  @Permission({ entityName: EntityName.USER, actionName: ActionName.READ })
   @Get('/:id')
-  async findUser(@Param('id', ParseIntPipe, IdNotExistsPipe) id: number) {
+  async findUser(@Param('id', ParseIntPipe, UserIdNotExistsPipe) id: number) {
     const user = await this.usersService.findById(id);
     return { message: ResponseCode.OK, result: { user } };
   }
 
   @Serialize(UserDto, (data) => data.result.users)
-  @UseGuards(AdminGuard)
   @UseInterceptors(CacheInterceptor)
   @CacheTTL(60000)
+  @UseGuards(PermissionGuard)
+  @Permission({ entityName: EntityName.USER, actionName: ActionName.READ })
   @Get()
   async findAllUsers(@Query() paginationDto: PaginationDto) {
     const users = await this.usersService.findAllUsers(paginationDto);
@@ -59,7 +63,8 @@ export class UsersController {
   }
 
   @Serialize(UserDto, (data) => data.result.user)
-  @UseGuards(AdminGuard)
+  @UseGuards(PermissionGuard)
+  @Permission({ entityName: EntityName.USER, actionName: ActionName.CREATE })
   @Post()
   async createUser(@Body() dto: CreateUserDto) {
     const user = await this.usersService.create(dto);
@@ -67,19 +72,32 @@ export class UsersController {
   }
 
   @Serialize(UserDto, (data) => data.result.user)
-  @UseGuards(AdminGuard)
+  @UseGuards(PermissionGuard)
+  @Permission({ entityName: EntityName.USER, actionName: ActionName.DELETE })
   @Delete('/:id')
-  async removeUser(@Param('id', ParseIntPipe, IdNotExistsPipe) id: number) {
+  async removeUser(@Param('id', ParseIntPipe, UserIdNotExistsPipe) id: number) {
     const user = await this.usersService.remove(id);
     return { message: ResponseCode.OK, result: { user } };
   }
 
   @Serialize(UserDto, (data) => data.result.user)
-  @UseGuards(OwnershipGuard)
+  @UseGuards(PermissionGuard)
+  @Permission({ entityName: EntityName.USER, actionName: ActionName.UPDATE })
   @Patch('/:id')
   async updateUser(
-    @Param('id', ParseIntPipe, IdNotExistsPipe) id: number,
+    @Param('id', ParseIntPipe, UserIdNotExistsPipe) id: number,
     @Body() dto: UpdateUserDto,
+  ) {
+    const updatedUser = await this.usersService.update(id, dto);
+    return { message: ResponseCode.OK, result: { user: updatedUser } };
+  }
+
+  @Serialize(UserDto, (data) => data.result.user)
+  @UseGuards(OwnershipGuard)
+  @Patch('/me/:id')
+  async updateMe(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateMeDto,
   ) {
     const updatedUser = await this.usersService.update(id, dto);
     return { message: ResponseCode.OK, result: { user: updatedUser } };

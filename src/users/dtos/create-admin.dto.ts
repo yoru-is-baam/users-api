@@ -1,17 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsEmail,
-  IsNotEmpty,
-  IsString,
-  Length,
-  Validate,
-} from 'class-validator';
-import { AdminExistsRule } from '../../decorators';
+import { IsEmail, IsString, Length, Validate } from 'class-validator';
+import { AdminExists } from '../decorators';
 
 export class CreateAdminDto {
   @ApiProperty({ required: true })
   @IsEmail()
-  @Validate(AdminExistsRule)
+  @Validate(AdminExists)
   email: string;
 
   @ApiProperty({ required: true })
