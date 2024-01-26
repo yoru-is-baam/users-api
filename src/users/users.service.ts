@@ -1,71 +1,69 @@
-import {
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { User } from './user.entity';
-import { QueryFailedError, Repository } from 'typeorm';
-import { PaginationDto } from './dtos/pagination.dto';
+import { PasswordService } from '../password/password.service';
+import { Injectable } from '@nestjs/common';
+import { CreateUserDto, PaginationDto } from './dtos';
+import { PrismaService } from '../prisma/prisma.service';
+import { CreateAdminDto } from './dtos';
+import { User } from '@prisma/client';
+import { Role } from '../enums';
 
 @Injectable()
 export class UsersService {
   constructor(
-    @InjectRepository(User) private readonly userRepository: Repository<User>,
+    private readonly prismaService: PrismaService,
+    private readonly passwordService: PasswordService,
   ) {}
 
-  async create(email: string, password: string): Promise<User> {
-    const userCount: number = await this.userRepository.count();
-    const user: User = this.userRepository.create({
-      email,
-      password,
-      admin: userCount === 0,
+  async create(dto: CreateUserDto) {
+    const hashedPassword: string = await this.passwordService.hashPassword(
+      dto.password,
+    );
+    return this.prismaService.user.create({
+      data: { email: dto.email, password: hashedPassword },
     });
-
-    try {
-      const createdUser = await this.userRepository.save(user);
-      return createdUser;
-    } catch (error) {
-      if (error instanceof QueryFailedError) {
-        if (error.driverError.code === 'ER_DUP_ENTRY') {
-          throw new ForbiddenException('Credentials taken');
-        }
-      }
-      throw error;
-    }
   }
 
-  private async findById(id: number): Promise<User> {
-    const user = await this.userRepository.findOneBy({ id });
-    if (!user) throw new NotFoundException('user not found');
-    return user;
+  async createAdmin(dto: CreateAdminDto) {
+    const hashedPassword: string = await this.passwordService.hashPassword(
+      dto.password,
+    );
+    return this.prismaService.user.create({
+      data: { email: dto.email, password: hashedPassword, roleId: Role.ADMIN },
+    });
   }
 
-  findUserById(id: number): Promise<User> {
-    return this.findById(id);
+  findById(id: number) {
+    return this.prismaService.user.findUnique({ where: { id } });
   }
 
-  findUserByEmail(email: string): Promise<User> {
-    return this.userRepository.findOneBy({ email });
+  findByEmail(email: string) {
+    return this.prismaService.user.findUnique({ where: { email } });
+  }
+
+  findFirstAdmin() {
+    return this.prismaService.user.findFirst({
+      where: { roleId: Role.ADMIN },
+    });
   }
 
   findAllUsers(paginationDto: PaginationDto): Promise<User[]> {
     const { page, pageSize } = paginationDto;
-    return this.userRepository
-      .createQueryBuilder('user')
-      .skip((page - 1) * pageSize)
-      .take(pageSize)
-      .getMany();
+    return this.prismaService.user.findMany({
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+    });
   }
 
   async update(id: number, attrs: Partial<User>): Promise<User> {
-    const user = await this.findById(id);
-    Object.assign(user, attrs);
-    return this.userRepository.save(user);
+    if ('password' in attrs)
+      attrs.password = await this.passwordService.hashPassword(attrs.password);
+    const user = await this.prismaService.user.update({
+      where: { id },
+      data: { ...attrs },
+    });
+    return user;
   }
 
   async remove(id: number): Promise<User> {
-    const user = await this.findById(id);
-    return this.userRepository.remove(user);
+    return this.prismaService.user.delete({ where: { id } });
   }
 }

@@ -1,0 +1,8 @@
+export enum ResponseCode {
+  OK = 'OK',
+  NOT_FOUND = 'NOT_FOUND',
+  CREATED = 'CREATED',
+  UNAUTHORIZED = 'UNAUTHORIZED',
+  NOT_ALLOW = 'NOT_ALLOW',
+  BAD_REQUEST = 'BAD_REQUEST',
+}
