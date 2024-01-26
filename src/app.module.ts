@@ -5,6 +5,8 @@ import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { PrismaModule } from './prisma/prisma.module';
 import { PasswordModule } from './password/password.module';
+import { RolesModule } from './roles/roles.module';
+import { PermissionsModule } from './permissions/permissions.module';
 
 @Module({
   imports: [
@@ -22,6 +24,8 @@ import { PasswordModule } from './password/password.module';
     AuthModule,
     PrismaModule,
     PasswordModule,
+    RolesModule,
+    PermissionsModule,
   ],
 })
 export class AppModule {}

@@ -4,11 +4,11 @@ import { AuthService } from './auth.service';
 import { UsersModule } from '../users/users.module';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from '../strategies';
-import { AdminExistsRule, EmailExistsRule } from '../decorators';
+import { AdminExists, EmailExists } from '../users/decorators';
 
 @Module({
   imports: [UsersModule, JwtModule.register({})],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, AdminExistsRule, EmailExistsRule],
+  providers: [AuthService, JwtStrategy, AdminExists, EmailExists],
 })
 export class AuthModule {}

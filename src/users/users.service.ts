@@ -2,8 +2,9 @@ import { PasswordService } from '../password/password.service';
 import { Injectable } from '@nestjs/common';
 import { CreateUserDto, PaginationDto } from './dtos';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateAdminDto } from '../auth/dtos';
-import { Role, User } from '@prisma/client';
+import { CreateAdminDto } from './dtos';
+import { User } from '@prisma/client';
+import { Role } from '../enums';
 
 @Injectable()
 export class UsersService {
@@ -26,7 +27,7 @@ export class UsersService {
       dto.password,
     );
     return this.prismaService.user.create({
-      data: { email: dto.email, password: hashedPassword, role: Role.ADMIN },
+      data: { email: dto.email, password: hashedPassword, roleId: Role.ADMIN },
     });
   }
 
@@ -40,7 +41,7 @@ export class UsersService {
 
   findFirstAdmin() {
     return this.prismaService.user.findFirst({
-      where: { role: Role.ADMIN },
+      where: { roleId: Role.ADMIN },
     });
   }
 

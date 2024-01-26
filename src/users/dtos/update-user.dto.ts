@@ -1,5 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString, Length } from 'class-validator';
+import {
+  IsInt,
+  IsOptional,
+  IsPositive,
+  IsString,
+  Length,
+  Validate,
+} from 'class-validator';
+import { RoleIdNotExists } from '../../roles/decorators';
 
 export class UpdateUserDto {
   @ApiProperty({
@@ -9,4 +17,12 @@ export class UpdateUserDto {
   @IsOptional()
   @Length(6)
   password: string;
+
+  @ApiProperty({
+    required: false,
+  })
+  @Validate(RoleIdNotExists)
+  @IsInt()
+  @IsPositive()
+  roleId: number;
 }

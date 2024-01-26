@@ -3,9 +3,10 @@ import { CreateUserDto } from '../users/dtos';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { UsersService } from '../users/users.service';
-import { CreateAdminDto, SignInDto } from './dtos';
+import { SignInDto } from './dtos';
 import { PasswordService } from '../password/password.service';
 import { Payload } from '../types';
+import { CreateAdminDto } from '../users/dtos';
 
 @Injectable()
 export class AuthService {
@@ -17,9 +18,9 @@ export class AuthService {
   ) {}
 
   async signUp(dto: CreateUserDto) {
-    const { id, email, role } = await this.usersService.create(dto);
+    const { id, email, roleId } = await this.usersService.create(dto);
 
-    const payload = { sub: id, email, role };
+    const payload = { sub: id, email, roleId };
     const accessToken = await this.signToken(payload);
 
     return { accessToken };
@@ -39,7 +40,7 @@ export class AuthService {
     const payload: Payload = {
       sub: user.id,
       email: user.email,
-      role: user.role,
+      roleId: user.roleId,
     };
     const accessToken = await this.signToken(payload);
 
@@ -54,7 +55,6 @@ export class AuthService {
       expiresIn: '0s',
       secret: 'logouttokensecret',
     });
-    await this.usersService.update(id, { refreshToken: null });
     return { accessToken: token, refreshToken: token };
   }
 
@@ -65,9 +65,9 @@ export class AuthService {
   }
 
   async createAdminAccount(dto: CreateAdminDto) {
-    const { id, email, role } = await this.usersService.createAdmin(dto);
+    const { id, email, roleId } = await this.usersService.createAdmin(dto);
 
-    const payload = { sub: id, email, role };
+    const payload = { sub: id, email, roleId };
     const accessToken = await this.signToken(payload);
 
     return { accessToken };

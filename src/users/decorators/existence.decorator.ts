@@ -1,4 +1,4 @@
-import { UsersService } from './../users/users.service';
+import { UsersService } from '../users.service';
 import { Injectable } from '@nestjs/common';
 import {
   ValidationArguments,
@@ -6,9 +6,9 @@ import {
   ValidatorConstraintInterface,
 } from 'class-validator';
 
-@ValidatorConstraint({ name: 'EmailExistsRule', async: true })
+@ValidatorConstraint({ name: 'EmailExists', async: true })
 @Injectable()
-export class EmailExistsRule implements ValidatorConstraintInterface {
+export class EmailExists implements ValidatorConstraintInterface {
   constructor(private readonly usersService: UsersService) {}
 
   async validate(value: any): Promise<boolean> {
@@ -22,9 +22,9 @@ export class EmailExistsRule implements ValidatorConstraintInterface {
   }
 }
 
-@ValidatorConstraint({ name: 'AdminExistsRule', async: true })
+@ValidatorConstraint({ name: 'AdminExists', async: true })
 @Injectable()
-export class AdminExistsRule implements ValidatorConstraintInterface {
+export class AdminExists implements ValidatorConstraintInterface {
   constructor(private readonly usersService: UsersService) {}
 
   async validate(value: any): Promise<boolean> {
